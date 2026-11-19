@@ -30,7 +30,7 @@ BitElevate interns submit a PR every day and senior mentors review each one. Wit
 ## Quickstart: React frontend + FastAPI (recommended)
 
 ```bash
-python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scriptsctivate
+python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
 # Option A: one process (build the frontend once, FastAPI serves it at http://localhost:8000)
