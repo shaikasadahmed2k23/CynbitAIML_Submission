@@ -1,0 +1,8 @@
+.git
+.venv
+**/__pycache__
+frontend/node_modules
+frontend/dist
+data/store.json
+.streamlit/secrets.toml
+tests

@@ -292,6 +292,19 @@ def reset() -> dict:
     return {"ok": True, "total": len(store.items)}
 
 
+REPORTS = {"AI_Opportunity_Report.md": ROOT / "docs" / "AI_Opportunity_Report.md",
+           "Technical_Approach.md": ROOT / "docs" / "Technical_Approach.md",
+           "results.md": ROOT / "eval" / "results.md"}
+
+
+@app.get("/reports/{name}", include_in_schema=False)
+def report(name: str):
+    path = REPORTS.get(name)
+    if not path or not path.exists():
+        raise HTTPException(404, "Report not found.")
+    return FileResponse(path, media_type="text/markdown; charset=utf-8", content_disposition_type="inline")
+
+
 # ------------------------------------------------------------------ frontend (SPA)
 if (DIST / "assets").exists():
     app.mount("/assets", StaticFiles(directory=DIST / "assets"), name="assets")
