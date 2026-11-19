@@ -1,0 +1,28 @@
+diff --git a/src/loginSuite.js b/src/loginSuite.js
+new file mode 100644
+--- /dev/null
++++ b/src/loginSuite.js
+@@ -0,0 +1,13 @@
++const { login } = require("./auth");
++
++// TODO: handle expired sessions
++async function runLoginSuite(users) {
++  for (const u of users) {
++    console.log("trying", u.email);
++    const res = await login(u.email, u.password);
++    console.log(res);
++    if (!res.ok) throw new Error("login failed for " + u.email);
++  }
++}
++
++module.exports = { runLoginSuite };
+diff --git a/tests/loginSuite.test.js b/tests/loginSuite.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/loginSuite.test.js
+@@ -0,0 +1,5 @@
++const { runLoginSuite } = require("../src/loginSuite");
++
++test("suite resolves for valid users", async () => {
++  await expect(runLoginSuite([])).resolves.toBeUndefined();
++});

@@ -70,7 +70,7 @@ def run_static_checks(diff: ParsedDiff, commit_messages: list[str] | None = None
                 indent = len(t) - len(t.lstrip())
                 if t.strip() and indent <= in_loop_indent:
                     in_loop_indent = None
-                elif re.search(r"(?i)\.(execute|query|filter|get|find_one|fetchone|fetchall)\(|requests\.(get|post)\(|SELECT\s", t):
+                elif re.search(r"(?i)\.(execute|query|filter|find_one|fetchone|fetchall)\(|requests\.(get|post)\(|SELECT\s", t):
                     out.append(Finding("n-plus-one", "warning", "Query/IO call inside a loop; likely N+1 — batch or prefetch.", f.path, ln.new_no))
                     in_loop_indent = None
 

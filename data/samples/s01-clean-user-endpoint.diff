@@ -1,0 +1,41 @@
+diff --git a/app/users.py b/app/users.py
+new file mode 100644
+--- /dev/null
++++ b/app/users.py
+@@ -0,0 +1,19 @@
++import sqlite3
++from fastapi import FastAPI, HTTPException
++
++app = FastAPI()
++DB_PATH = "app.db"
++
++
++def get_conn():
++    return sqlite3.connect(DB_PATH)
++
++
++@app.get("/users/{user_id}")
++def get_user(user_id: int):
++    """Return a single user or 404."""
++    with get_conn() as conn:
++        row = conn.execute("SELECT id, name, email FROM users WHERE id = ?", (user_id,)).fetchone()
++    if row is None:
++        raise HTTPException(status_code=404, detail="user not found")
++    return {"id": row[0], "name": row[1], "email": row[2]}
+diff --git a/tests/test_users.py b/tests/test_users.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_users.py
+@@ -0,0 +1,12 @@
++from fastapi.testclient import TestClient
++from app.users import app
++
++client = TestClient(app)
++
++
++def test_unknown_user_returns_404():
++    assert client.get("/users/999999").status_code == 404
++
++
++def test_sql_metacharacters_are_not_executed():
++    assert client.get("/users/1;DROP TABLE users").status_code == 422

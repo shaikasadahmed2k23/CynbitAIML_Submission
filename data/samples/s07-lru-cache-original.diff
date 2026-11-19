@@ -1,0 +1,52 @@
+diff --git a/app/cache.py b/app/cache.py
+new file mode 100644
+--- /dev/null
++++ b/app/cache.py
+@@ -0,0 +1,25 @@
++from collections import OrderedDict
++
++
++class LRUCache:
++    # least-recently-used cache
++    def __init__(self, capacity: int):
++        if capacity <= 0:
++            raise ValueError("capacity must be positive")
++        self.capacity = capacity
++        self.data = OrderedDict()
++
++    def get(self, key):
++        if key not in self.data:
++            return None
++        self.data.move_to_end(key)
++        return self.data[key]
++
++    def put(self, key, value):
++        self.data[key] = value
++        self.data.move_to_end(key)
++        if len(self.data) > self.capacity:
++            self.data.popitem(last=False)
++
++    def __len__(self):
++        return len(self.data)
+diff --git a/tests/test_cache.py b/tests/test_cache.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_cache.py
+@@ -0,0 +1,17 @@
++import pytest
++from app.cache import LRUCache
++
++
++def test_evicts_least_recently_used():
++    c = LRUCache(2)
++    c.put("a", 1)
++    c.put("b", 2)
++    c.get("a")
++    c.put("c", 3)
++    assert c.get("b") is None
++    assert c.get("a") == 1
++
++
++def test_invalid_capacity():
++    with pytest.raises(ValueError):
++        LRUCache(0)

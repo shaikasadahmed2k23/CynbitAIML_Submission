@@ -1,0 +1,147 @@
+[
+  {
+    "id": "s01-clean-user-endpoint",
+    "intern": "priya.sharma",
+    "track": "Python Backend",
+    "week": "Weeks 5-6: Core architecture (auth, DB, APIs)",
+    "title": "feat(api): add GET /users/{id} with tests",
+    "commits": [
+      "feat(api): add user lookup endpoint",
+      "test(api): cover 404 and injection input"
+    ],
+    "expected_triage": "AUTO_APPROVE",
+    "seeded": []
+  },
+  {
+    "id": "s02-sqli-search",
+    "intern": "rohan.verma",
+    "track": "Python Backend",
+    "week": "Weeks 5-6: Core architecture (auth, DB, APIs)",
+    "title": "feat: add user search endpoint",
+    "commits": [
+      "feat: add search endpoint"
+    ],
+    "expected_triage": "BLOCKER",
+    "seeded": [
+      "sql-injection",
+      "missing-tests"
+    ]
+  },
+  {
+    "id": "s03-leaked-openai-key",
+    "intern": "ankit.joshi",
+    "track": "Full Stack SaaS",
+    "week": "Weeks 5-6: Core architecture (auth, DB, APIs)",
+    "title": "feat: summarize route using OpenAI",
+    "commits": [
+      "feat: summarize route",
+      "fix"
+    ],
+    "expected_triage": "BLOCKER",
+    "seeded": [
+      "hardcoded-secret",
+      "missing-tests"
+    ]
+  },
+  {
+    "id": "s04-no-tests-cart",
+    "intern": "meera.nair",
+    "track": "Python Backend",
+    "week": "Weeks 3-4: Bug hunting & testing",
+    "title": "feat: cart total and coupon helpers",
+    "commits": [
+      "feat(cart): add total + coupon helpers"
+    ],
+    "expected_triage": "NEEDS_MENTOR",
+    "seeded": [
+      "missing-tests"
+    ]
+  },
+  {
+    "id": "s05-n-plus-one-report",
+    "intern": "karan.mehta",
+    "track": "Python Backend",
+    "week": "Weeks 7-8: Caching & concurrency",
+    "title": "feat(reports): orders report with customer names",
+    "commits": [
+      "feat(reports): orders report"
+    ],
+    "expected_triage": "NEEDS_MENTOR",
+    "seeded": [
+      "n-plus-one"
+    ]
+  },
+  {
+    "id": "s06-race-counter",
+    "intern": "sneha.iyer",
+    "track": "Python Backend",
+    "week": "Weeks 7-8: Caching & concurrency",
+    "title": "feat: parallel counter with threads",
+    "commits": [
+      "feat: threaded counter"
+    ],
+    "expected_triage": "NEEDS_MENTOR",
+    "seeded": [
+      "race-condition"
+    ]
+  },
+  {
+    "id": "s07-lru-cache-original",
+    "intern": "aditya.rao",
+    "track": "AI & Vector Intelligence",
+    "week": "Weeks 3-4: Bug hunting & testing",
+    "title": "feat(cache): LRU cache with tests",
+    "commits": [
+      "feat(cache): add LRU cache",
+      "test(cache): eviction + invalid capacity"
+    ],
+    "expected_triage": "AUTO_APPROVE",
+    "seeded": []
+  },
+  {
+    "id": "s08-lru-cache-copied",
+    "intern": "vikram.singh",
+    "track": "AI & Vector Intelligence",
+    "week": "Weeks 3-4: Bug hunting & testing",
+    "title": "feat(cache): cache implementation",
+    "commits": [
+      "feat(cache): add cache with eviction",
+      "test(cache): add tests"
+    ],
+    "expected_triage": "NEEDS_MENTOR",
+    "seeded": [
+      "copied"
+    ],
+    "copy_of": "s07-lru-cache-original"
+  },
+  {
+    "id": "s09-clean-react-filter",
+    "intern": "nisha.kapoor",
+    "track": "Frontend Ops Dashboard",
+    "week": "Weeks 5-6: Core architecture (auth, DB, APIs)",
+    "title": "feat(ui): accessible StatusFilter component",
+    "commits": [
+      "feat(ui): add StatusFilter with aria roles",
+      "test(ui): onChange behaviour"
+    ],
+    "expected_triage": "AUTO_APPROVE",
+    "seeded": []
+  },
+  {
+    "id": "s10-debug-leftovers",
+    "intern": "farhan.khan",
+    "track": "QA & Test Automation",
+    "week": "Weeks 3-4: Bug hunting & testing",
+    "title": "test: login suite runner",
+    "commits": [
+      "wip",
+      "fix"
+    ],
+    "expected_triage": "NEEDS_MENTOR",
+    "seeded": [
+      "debug-leftover",
+      "todo",
+      "bad-commit-message"
+    ]
+  }
+]

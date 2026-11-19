@@ -1,0 +1,33 @@
+diff --git a/app/counter.py b/app/counter.py
+new file mode 100644
+--- /dev/null
++++ b/app/counter.py
+@@ -0,0 +1,18 @@
++import threading
++
++COUNTER = 0
++
++
++def increment_many(n: int) -> None:
++    global COUNTER
++    for _ in range(n):
++        COUNTER += 1
++
++
++def run(threads: int = 8, per_thread: int = 100_000) -> int:
++    workers = [threading.Thread(target=increment_many, args=(per_thread,)) for _ in range(threads)]
++    for w in workers:
++        w.start()
++    for w in workers:
++        w.join()
++    return COUNTER
+diff --git a/tests/test_counter.py b/tests/test_counter.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_counter.py
+@@ -0,0 +1,5 @@
++from app.counter import run
++
++
++def test_run_counts_all_increments():
++    assert run(threads=4, per_thread=1000) == 4000

@@ -1,0 +1,39 @@
+diff --git a/src/components/StatusFilter.jsx b/src/components/StatusFilter.jsx
+new file mode 100644
+--- /dev/null
++++ b/src/components/StatusFilter.jsx
+@@ -0,0 +1,20 @@
++import { useState } from "react";
++
++export function StatusFilter({ statuses, onChange }) {
++  const [active, setActive] = useState("all");
++
++  const select = (s) => {
++    setActive(s);
++    onChange(s);
++  };
++
++  return (
++    <div role="tablist" aria-label="Filter tickets by status">
++      {["all", ...statuses].map((s) => (
++        <button key={s} role="tab" aria-selected={active === s} onClick={() => select(s)}>
++          {s}
++        </button>
++      ))}
++    </div>
++  );
++}
+diff --git a/src/components/StatusFilter.test.jsx b/src/components/StatusFilter.test.jsx
+new file mode 100644
+--- /dev/null
++++ b/src/components/StatusFilter.test.jsx
+@@ -0,0 +1,9 @@
++import { render, screen, fireEvent } from "@testing-library/react";
++import { StatusFilter } from "./StatusFilter";
++
++test("calls onChange with the selected status", () => {
++  const onChange = jest.fn();
++  render(<StatusFilter statuses={["open", "closed"]} onChange={onChange} />);
++  fireEvent.click(screen.getByRole("tab", { name: "closed" }));
++  expect(onChange).toHaveBeenCalledWith("closed");
++});

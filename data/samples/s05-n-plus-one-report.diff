@@ -1,0 +1,34 @@
+diff --git a/app/reports.py b/app/reports.py
+new file mode 100644
+--- /dev/null
++++ b/app/reports.py
+@@ -0,0 +1,13 @@
++import sqlite3
++
++
++def orders_report(conn: sqlite3.Connection):
++    cur = conn.cursor()
++    cur.execute("SELECT id, customer_id, total FROM orders")
++    report = []
++    for order in cur.fetchall():
++        c2 = conn.cursor()
++        c2.execute("SELECT name FROM customers WHERE id = ?", (order[1],))
++        customer = c2.fetchone()
++        report.append({"order": order[0], "customer": customer[0], "total": order[2]})
++    return report
+diff --git a/tests/test_reports.py b/tests/test_reports.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_reports.py
+@@ -0,0 +1,11 @@
++import sqlite3
++from app.reports import orders_report
++
++
++def test_orders_report_returns_customer_names():
++    conn = sqlite3.connect(":memory:")
++    conn.execute("CREATE TABLE customers (id INTEGER, name TEXT)")
++    conn.execute("CREATE TABLE orders (id INTEGER, customer_id INTEGER, total REAL)")
++    conn.execute("INSERT INTO customers VALUES (1, 'Asha')")
++    conn.execute("INSERT INTO orders VALUES (10, 1, 99.5)")
++    assert orders_report(conn)[0]["customer"] == "Asha"

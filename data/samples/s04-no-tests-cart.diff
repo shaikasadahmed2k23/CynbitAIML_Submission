@@ -1,0 +1,23 @@
+diff --git a/app/cart.py b/app/cart.py
+new file mode 100644
+--- /dev/null
++++ b/app/cart.py
+@@ -0,0 +1,18 @@
++from dataclasses import dataclass
++
++
++@dataclass
++class Item:
++    name: str
++    price: float
++    qty: int
++
++
++def cart_total(items: list[Item], discount_pct: float = 0.0) -> float:
++    subtotal = sum(i.price * i.qty for i in items)
++    return round(subtotal * (1 - discount_pct / 100), 2)
++
++
++def apply_coupon(total: float, code: str) -> float:
++    coupons = {"SAVE10": 0.10, "SAVE20": 0.20}
++    return round(total * (1 - coupons.get(code, 0)), 2)

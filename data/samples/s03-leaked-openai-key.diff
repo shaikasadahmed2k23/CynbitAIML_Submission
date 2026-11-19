@@ -1,0 +1,22 @@
+diff --git a/server/routes/summarize.js b/server/routes/summarize.js
+new file mode 100644
+--- /dev/null
++++ b/server/routes/summarize.js
+@@ -0,0 +1,17 @@
++const express = require("express");
++const axios = require("axios");
++
++const router = express.Router();
++const OPENAI_API_KEY = "sk-proj-FAKEFAKEFAKEFAKEFAKE0123456789";
++
++router.post("/summarize", async (req, res) => {
++  const { text } = req.body;
++  const r = await axios.post(
++    "https://api.openai.com/v1/chat/completions",
++    { model: "gpt-4o-mini", messages: [{ role: "user", content: `Summarize: ${text}` }] },
++    { headers: { Authorization: `Bearer ${OPENAI_API_KEY}` } }
++  );
++  res.json({ summary: r.data.choices[0].message.content });
++});
++
++module.exports = router;
