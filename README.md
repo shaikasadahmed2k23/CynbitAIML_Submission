@@ -21,7 +21,7 @@ BitElevate interns submit a PR every day and senior mentors review each one. Wit
 
 - **Input:** public GitHub PR URL (REST API, optional token) or pasted diff, plus track and roadmap-week selectors.
 - **Deterministic checks:** hardcoded secrets, SQL injection, debug leftovers, TODOs, missing tests, N+1 queries, unlocked thread state, huge PRs, bad commit messages.
-- **LLM rubric review** (correctness, code quality, security, testing, roadmap alignment) with strict, pydantic-validated JSON, inline comments with suggestions, and triage `AUTO_APPROVE | NEEDS_MENTOR | BLOCKER`. Groq (llama-3.3-70b) → Gemini fallback → **deterministic mock mode**, so the demo never breaks.
+- **LLM rubric review** (correctness, code quality, security, testing, roadmap alignment) with strict, pydantic-validated JSON, inline comments with suggestions, and triage `AUTO_APPROVE | NEEDS_MENTOR | BLOCKER`. Groq (gpt-oss-120b) → Gemini 2.5 flash fallback → **deterministic mock mode**, so the demo never breaks.
 - **Hallucination guard:** comments pointing at lines that are not in the diff are dropped.
 - **Copy detection:** TF-IDF char n-grams over normalized code (survives variable renaming).
 - **Mentor dashboard:** priority-sorted queue, triage badges, copy flags, estimated mentor-minutes saved.
@@ -58,19 +58,19 @@ With no API keys the app runs in **MOCK** mode and is fully usable. The dashboar
 
 ```bash
 pytest -q                      # unit tests
-python eval/run_eval.py        # evaluation (live LLM if a key is set, else mock) -> eval/results.md
-python eval/run_eval.py --mock # force deterministic mock
+python eval/run_eval.py --live  # live LLM on synthetic + real PRs (needs a key) -> eval/results.md
+python eval/run_eval.py --mock  # deterministic mock baseline
 python data/build_samples.py   # regenerate sample diffs
 ```
 
 ## Environment variables
 
-Read from the environment or `.streamlit/secrets.toml` (see [`.streamlit/secrets.toml.example`](.streamlit/secrets.toml.example)). All optional.
+Read from the environment, a git-ignored `.env` file (loaded with python-dotenv), or `.streamlit/secrets.toml` (see [`.streamlit/secrets.toml.example`](.streamlit/secrets.toml.example)). All optional.
 
 | Name | Purpose |
 |---|---|
-| `GROQ_API_KEY` | Primary LLM (llama-3.3-70b-versatile) |
-| `GEMINI_API_KEY` | Fallback LLM |
+| `GROQ_API_KEY` | Primary LLM (default model `openai/gpt-oss-120b`; override with `GROQ_MODEL`) |
+| `GEMINI_API_KEY` | Fallback LLM (default `gemini-2.5-flash`; override with `GEMINI_MODEL`) |
 | `GITHUB_TOKEN` | Higher GitHub API rate limit when fetching PR URLs |
 
 ## Project structure
@@ -110,6 +110,20 @@ The public endpoint limits each IP to 30 reviews per hour to protect your LLM qu
 
 1. Push this repo to GitHub. 2. On share.streamlit.io choose **New app**, pick the repo, branch `main`, main file `app/main.py`. 3. (Optional) In **Advanced settings → Secrets** paste your keys in the format of `secrets.toml.example`. 4. Deploy, then paste the URL at the top of this README.
 
+## Evaluation results
+
+Full tables, labeling criteria and failure notes: [`eval/results.md`](eval/results.md). Mock baseline and live model are reported separately (2026-11-20; 10 synthetic PRs + 5 real public GitHub PRs, labeled by the author).
+
+| | Mock baseline (rule-based) | Live: Groq `openai/gpt-oss-120b` + Gemini fallback |
+|---|---|---|
+| Seeded issues found (synthetic) | 11/11 | 11/11 |
+| Triage accuracy, synthetic / real | 10/10 / 3/5 | 9/10 / 3/5 |
+| False escalations of clean PRs, synthetic / real | 0/3 / 0/3 | 0/3 / 1/3 |
+| Latency per PR (p50) | ~0.01 s | 8.6 s synthetic / 18.9 s real (free-tier 429 retries and fallbacks inflate this; unthrottled calls took 2-4 s) |
+| Cost per PR | $0 | ≈ $0.0009 measured (≈ $39 per 42,000-PR cohort) |
+
+Live triage is noisy on borderline PRs (a different PR failed in each of three runs), so treat it as indicative on a 15-PR set. `llama-3.3-70b-versatile` is no longer served by Groq, hence the model change. Details: [Technical Approach §6](docs/Technical_Approach.md).
+
 ## Known limitations
 
-The mock reviewer is rule-based; committed evaluation numbers measure the deterministic layers on 10 hand-written samples, not live-LLM accuracy. See [Technical Approach §6 and §10](docs/Technical_Approach.md).
+The set is tiny and labeled by one person; the mock reviewer is rule-based and the live model's triage varies between runs. See [Technical Approach §6 and §10](docs/Technical_Approach.md).

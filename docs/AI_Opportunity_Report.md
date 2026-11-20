@@ -74,7 +74,7 @@ Impact
 | Manual review time | 10 min/PR | Typical first-pass review of a small PR (read, comment, decide) |
 | With BitReview AI | 40% of PRs auto-approved (1 min spot-check); 60% escalated (3 min, since the AI has already located the issues) | Conservative; the sample set in `eval/results.md` is 30% clean |
 | Blended mentor cost | $8 / hour | Placeholder, replace with the real figure |
-| AI cost | ≈ $0.00073 / PR | Token estimate at Groq llama-3.3-70b list price (see `eval/results.md`) |
+| AI cost | ≈ $0.0009 / PR | Measured from API token usage on 15 PRs with Groq gpt-oss-120b (see `eval/results.md`) |
 
 | | Calculation | Result |
 |---|---|---|
@@ -84,11 +84,11 @@ Impact
 | **Time saved** | 7,000 − 1,540 | **5,460 hours (78%)** per cohort |
 | Equivalent mentor FTEs (160 h / month, 2 months) | 5,460 / 320 | **≈ 17 mentors** freed per cohort |
 | Money saved at $8/h | 5,460 × $8 | **≈ $43,700** |
-| AI cost | 42,000 × $0.00073 | **≈ $31** |
+| AI cost | 42,000 × $0.0009 | **≈ $38** |
 
 Sensitivity: if only 20% of PRs are auto-approved and escalations still take 5 minutes, average time is 4.2 min and savings are still 58% (≈ 4,060 hours). The conclusion survives pessimistic inputs; the headline number does not, so it should be re-measured in a pilot (see the production plan in the Technical Approach).
 
-**What this does *not* claim.** The prototype's evaluation uses 10 hand-labeled PRs and a rule-based mock reviewer; LLM-level accuracy has not been measured on real intern PRs yet. The pilot's first goal is to measure it against mentor verdicts before auto-approval is switched on.
+**What this does *not* claim.** The prototype's evaluation uses 10 synthetic PRs and 5 real public PRs, all labeled by the author. The live model found all 11 seeded issues, but its triage label was right on 12 of 15 PRs in the latest run and varied between runs; accuracy on real intern PRs has not been measured. The pilot's first goal is to measure it against mentor verdicts before auto-approval is switched on.
 
 ## 5. Recommended sequence
 

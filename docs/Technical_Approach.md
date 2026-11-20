@@ -28,8 +28,8 @@ Code layout: `app/core/*` is a pure-Python library with no Streamlit dependency 
 
 | Decision | Choice | Rationale | Trade-off |
 |---|---|---|---|
-| Primary LLM | **Groq · llama-3.3-70b-versatile** | Very low latency (typically 1–3 s for a review) and low list price (~$0.59 / $0.79 per 1M in/out tokens), which matters at 40k+ reviews per cohort; open weights allow later self-hosting; JSON mode available | Weaker than frontier models (GPT / Claude class) at subtle logic and concurrency bugs; mitigated by deterministic static checks and the mentor escalation path |
-| Fallback | **Gemini flash** | Different provider = independent failure domain; free/cheap tier | Output style differs; both pass the same pydantic validation |
+| Primary LLM | **Groq · openai/gpt-oss-120b** (default; `GROQ_MODEL` overrides) | Low latency (2–4 s per review when not rate-limited) and low list price (~$0.15 / $0.60 per 1M in/out tokens), which matters at 40k+ reviews per cohort; open weights allow later self-hosting; JSON mode available. *llama-3.3-70b-versatile was the original choice but Groq no longer serves it, so it could not be evaluated.* | Weaker than frontier models (GPT / Claude class) at subtle logic and concurrency bugs; mitigated by deterministic static checks and the mentor escalation path |
+| Fallback | **Gemini 2.5 flash** (`GEMINI_MODEL`) | Different provider = independent failure domain; free/cheap tier | Output style differs; both pass the same pydantic validation |
 | Last resort | **Mock reviewer** | Deterministic rule-based review built from the static findings, so the app and demo never break (no key, rate limit, outage) | Not a real rubric judgement; labelled "mock" in the UI and metadata |
 | Frontier models | Not used by default | Roughly 10–50× the cost per PR; reserved for a future "escalate hard PRs" tier | Possible accuracy gain on hard cases; revisit after the pilot gives mentor-labeled data |
 | Copy detection | **TF-IDF over character 3–5-grams** on *normalized* added code | Instant, free, no model download or API call; normalization strips comments, collapses strings and renames identifiers to a token, so renaming variables does not evade it; works fully offline on Streamlit Cloud | Misses semantic rewrites (same algorithm, different structure) and flags common boilerplate; embeddings (e.g. code-specific models) would capture semantics but add cost, latency, and a vector DB. Plan: keep TF-IDF as stage 1, add embedding re-rank only for candidates |
@@ -115,11 +115,34 @@ The dashboard sorts by priority. Minutes saved are modelled as 10 (manual) − 3
 
 **Method.** `eval/run_eval.py` runs the full pipeline over 10 labeled PRs in `data/samples` (3 clean; 7 seeded with SQL injection, a leaked key, missing tests, an N+1 query, a race condition, a renamed copy of another PR, and debug leftovers + bad commit messages; 11 seeded issues in total). Metrics: seeded-issue detection rate, triage accuracy against the label, false escalation of clean PRs, latency, and cost per PR. Output: [`eval/results.md`](../eval/results.md).
 
-**Results (mock reviewer, committed):** 11/11 seeded issues detected, 10/10 triage correct, 0/3 clean PRs falsely escalated, ~0.02 s/PR, projected Groq cost ≈ $0.00073 per PR (≈ $0.73 per 1,000 PRs).
+**Two evaluation sets.** (1) The 10 synthetic PRs above. (2) Five real, merged public GitHub PRs (psf/requests #6963 and #7502, pallets/click #3884, pallets/flask #5797, expressjs/express #6894) pinned by URL in `data/build_eval_real.py` and labeled by me beforehand with written criteria ([`eval/LABELING.md`](../eval/LABELING.md)). Results are reported for the **mock baseline** and the **live model** separately; full tables, per-PR rows and failure notes are in [`eval/results.md`](../eval/results.md).
 
-**How to read this honestly.** The samples were written by the same person as the heuristics, so 100% is a *regression baseline for the deterministic layers*, not a generalisation claim. The live-LLM numbers (latency, cost, whether the model catches issues the regexes miss) are produced by running `python eval/run_eval.py` with `GROQ_API_KEY` set; I could not include them in the committed results because no key was available in the build environment. The production plan replaces the toy set with real mentor-labeled PRs.
+**Mock baseline (rule-based, no LLM; 2026-11-20).**
 
-**Unit tests** (`pytest`, 23 tests): diff parsing incl. line numbers; every static rule with positive and negative cases; copy detection (renamed copy flagged, unrelated code and edge cases not); schema validation (rejects out-of-range scores, bad enums, missing fields), mock determinism, markdown-fenced JSON extraction, and the hallucinated-line drop.
+| | Synthetic (10) | Real (5) |
+|---|---|---|
+| Seeded-issue detection | 11/11 | n/a |
+| Triage accuracy | 10/10 | 3/5 (misses both `NEEDS_MENTOR` labels: it cannot judge security or design) |
+| False escalations of clean PRs | 0/3 | 0/3 |
+| Latency / cost | ~0.01 s / $0 | ~0.01 s / $0 |
+
+**Live model (Groq `openai/gpt-oss-120b`, Gemini 2.5 flash fallback; latest run, 2026-11-20).**
+
+| | Synthetic (10) | Real (5) |
+|---|---|---|
+| Seeded-issue detection | 11/11 | n/a |
+| Triage accuracy | 9/10 | 3/5 |
+| False escalations of clean PRs | 0/3 | 1/3 |
+| Missed blockers | 0 | 0 |
+| Latency per PR, avg / p50 / max | 10.3 / 8.6 / 22.8 s | 18.5 / 18.9 / 33.3 s |
+| Measured cost per PR | $0.00085 | $0.00107 |
+| Hallucinated line numbers dropped | 0 | 0 |
+
+**Failures seen (live).** Triage is noisy on borderline PRs: across three live runs the synthetic set scored 9/10 each time but a *different* PR failed each time, and the real set scored 5/5 then 3/5 (after I tightened the triage rules in the prompt, which did not help measurably). Mismatches were mostly the model being stricter than my labels; the unsafe direction occurred once (the Gemini fallback auto-approved flask #5797, a borderline label). Groq's free tier returned HTTP 429 on 1–3 PRs per run, handled by one retry then the Gemini fallback; those account for the slowest rows, so the latencies above include rate-limit waits and are not what a paid tier would show (the quick calls took 2–4 s). There were no JSON-parse or schema failures and no hallucinated line numbers, so no parser changes were needed. One logic bug was found and fixed: the triage reason said "clean" when the LLM itself had escalated.
+
+**How to read this honestly.** The synthetic samples were written by the same person as the heuristics, so the mock's 100% is a regression baseline for the deterministic layers, not a generalisation claim. The real set is only 5 PRs, labeled by one person, and merged PRs are mostly good code, so it tests false escalation and score sanity, not blocker recall. One PR moves a percentage by 10–20 points. The conclusion I would defend: the live model surfaced every seeded issue and never waved through a blocker, but its triage label alone is not trustworthy enough to auto-approve without the deterministic safety rails and mentor spot-checks; the pilot should measure it against mentor verdicts before auto-approval is enabled.
+
+**Unit tests** (`pytest`, 38 tests incl. API): diff parsing incl. line numbers; every static rule with positive and negative cases; copy detection (renamed copy flagged, unrelated code and edge cases not); schema validation (rejects out-of-range scores, bad enums, missing fields), mock determinism, markdown-fenced JSON extraction, and the hallucinated-line drop.
 
 ## 7. Cost and latency estimates
 
@@ -127,9 +150,9 @@ Token estimate per PR (small PR): ~1.5–3k input (system prompt ≈ 700 tokens 
 
 | | Per PR | Per 1,000 PRs | 42,000 PRs (1 cohort) |
 |---|---|---|---|
-| Groq llama-3.3-70b (list price) | ≈ $0.001–0.002 live; ≈ $0.00073 on the sample set | ≈ $1–2 | ≈ $40–85 |
+| Groq gpt-oss-120b (**measured** from API token usage, 15 PRs) | ≈ $0.0009 (range $0.0006–0.0014) | ≈ $0.90 | ≈ $39 |
 | Gemini flash fallback | ≈ $0.0003 | ≈ $0.30 | ≈ $13 |
-| Latency (LLM call) | ~1–3 s typical on Groq (to be confirmed by live eval) | | |
+| Latency (whole pipeline, **measured**) | 2–4 s when unthrottled; 9–19 s median on the free tier because of 429 retries and Gemini fallbacks | | |
 | Static + similarity | < 50 ms for 10 stored PRs | | |
 
 Similarity cost grows with store size (O(N) per PR). At 40k PRs, restrict comparison to the same track + week window, or switch to MinHash/LSH or an ANN index.
@@ -180,7 +203,7 @@ flowchart LR
 
 ## 10. Limitations of the prototype
 
-- The mock reviewer is rule-based; it is a safety net, not a substitute for the LLM.
+- The mock reviewer is rule-based; it is a safety net, not a substitute for the LLM. Live numbers come from 15 PRs and one run of record (§6); they are indicative only.
 - Heuristic checks are language-light (Python/JS/TS focus) and regex-based; they will miss obfuscated issues and can false-positive on unusual code.
 - The JSON store is not multi-user safe and may reset on ephemeral hosts; the "Reset to sample data" button restores the demo state.
 - Live GitHub fetching is subject to API rate limits without a token.
