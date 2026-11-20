@@ -9,7 +9,7 @@
 
 | Review (intern view) | Mentor queue | How it works |
 |---|---|---|
-| _<placeholder: docs/img/review.png>_ | _<placeholder: docs/img/queue.png>_ | _<placeholder: docs/img/how.png>_ |
+| ![Review page](docs/img/review.png) | ![Mentor queue](docs/img/queue.png) | ![How it works](docs/img/how.png) |
 
 The production UI is a React + Tailwind app themed on Cynbit's brand (tokens in [`frontend/src/theme.ts`](frontend/src/theme.ts)), served by a FastAPI backend. The original Streamlit demo is kept as a fallback (see below).
 
