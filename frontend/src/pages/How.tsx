@@ -15,7 +15,7 @@ const STEPS: { icon: ReactNode; title: string; body: string; file: string }[] = 
 const ROI = [
   { k: "42,000", v: "PRs per 1,000-intern cohort", s: "1 PR × 42 working days" },
   { k: "5,460 h", v: "mentor time saved", s: "78% less than 10 min/PR manual review" },
-  { k: "≈ $31", v: "AI cost for the cohort", s: "about $0.00073 per PR at Groq list prices" },
+  { k: "≈ $31", v: "AI cost for the cohort", s: "about $0.0009 per PR, measured on Groq gpt-oss-120b" },
   { k: "< 3 s", v: "to first feedback", s: "instead of waiting for a mentor" },
 ];
 

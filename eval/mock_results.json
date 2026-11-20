@@ -1,0 +1,383 @@
+{
+ "date": "2026-11-20",
+ "sets": {
+  "synthetic": {
+   "set": "synthetic",
+   "rows": [
+    {
+     "id": "s01-clean-user-endpoint",
+     "seeded": [],
+     "detected": {},
+     "expected": "AUTO_APPROVE",
+     "got": "AUTO_APPROVE",
+     "ok": true,
+     "score": 4.8,
+     "latency_s": 0.001,
+     "llm_latency_s": 0.0,
+     "cost_usd": 0.0,
+     "provider": "mock/rule-based",
+     "dropped": 0,
+     "n_comments": 0,
+     "errors": [],
+     "reasons": [
+      "clean; safe to auto-approve"
+     ],
+     "summary": "Clean, focused change for Weeks 5-6. No critical issues detected; tests and structure look fine. (mock review)",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s02-sqli-search",
+     "seeded": [
+      "sql-injection",
+      "missing-tests"
+     ],
+     "detected": {
+      "sql-injection": true,
+      "missing-tests": true
+     },
+     "expected": "BLOCKER",
+     "got": "BLOCKER",
+     "ok": true,
+     "score": 3.6,
+     "latency_s": 0.01,
+     "llm_latency_s": 0.0,
+     "cost_usd": 0.0,
+     "provider": "mock/rule-based",
+     "dropped": 0,
+     "n_comments": 1,
+     "errors": [],
+     "reasons": [
+      "1 critical finding(s)",
+      "1 warning(s)"
+     ],
+     "summary": "1 critical and 1 warning issue(s) found. Top issue: SQL built via string formatting; use parameterized queries. (mock review)",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s03-leaked-openai-key",
+     "seeded": [
+      "hardcoded-secret",
+      "missing-tests"
+     ],
+     "detected": {
+      "hardcoded-secret": true,
+      "missing-tests": true
+     },
+     "expected": "BLOCKER",
+     "got": "BLOCKER",
+     "ok": true,
+     "score": 3.6,
+     "latency_s": 0.006,
+     "llm_latency_s": 0.0,
+     "cost_usd": 0.0,
+     "provider": "mock/rule-based",
+     "dropped": 0,
+     "n_comments": 1,
+     "errors": [],
+     "reasons": [
+      "1 critical finding(s)",
+      "1 warning(s)"
+     ],
+     "summary": "1 critical and 1 warning issue(s) found. Top issue: Possible Groq/OpenAI-style key committed in source. (mock review)",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s04-no-tests-cart",
+     "seeded": [
+      "missing-tests"
+     ],
+     "detected": {
+      "missing-tests": true
+     },
+     "expected": "NEEDS_MENTOR",
+     "got": "NEEDS_MENTOR",
+     "ok": true,
+     "score": 4.2,
+     "latency_s": 0.007,
+     "llm_latency_s": 0.0,
+     "cost_usd": 0.0,
+     "provider": "mock/rule-based",
+     "dropped": 0,
+     "n_comments": 0,
+     "errors": [],
+     "reasons": [
+      "1 warning(s)"
+     ],
+     "summary": "0 critical and 1 warning issue(s) found. Top issue: 1 source file(s) changed but no tests added/updated. (mock review)",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s05-n-plus-one-report",
+     "seeded": [
+      "n-plus-one"
+     ],
+     "detected": {
+      "n-plus-one": true
+     },
+     "expected": "NEEDS_MENTOR",
+     "got": "NEEDS_MENTOR",
+     "ok": true,
+     "score": 4.2,
+     "latency_s": 0.011,
+     "llm_latency_s": 0.0,
+     "cost_usd": 0.0,
+     "provider": "mock/rule-based",
+     "dropped": 0,
+     "n_comments": 1,
+     "errors": [],
+     "reasons": [
+      "1 warning(s)"
+     ],
+     "summary": "0 critical and 1 warning issue(s) found. Top issue: Query/IO call inside a loop; likely N+1 \u2014 batch or prefetch. (mock review)",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s06-race-counter",
+     "seeded": [
+      "race-condition"
+     ],
+     "detected": {
+      "race-condition": true
+     },
+     "expected": "NEEDS_MENTOR",
+     "got": "NEEDS_MENTOR",
+     "ok": true,
+     "score": 4.4,
+     "latency_s": 0.009,
+     "llm_latency_s": 0.0,
+     "cost_usd": 0.0,
+     "provider": "mock/rule-based",
+     "dropped": 0,
+     "n_comments": 1,
+     "errors": [],
+     "reasons": [
+      "1 warning(s)"
+     ],
+     "summary": "0 critical and 1 warning issue(s) found. Top issue: Shared state mutated from threads without a lock; possible race condition. (mock review)",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s07-lru-cache-original",
+     "seeded": [],
+     "detected": {},
+     "expected": "AUTO_APPROVE",
+     "got": "AUTO_APPROVE",
+     "ok": true,
+     "score": 4.8,
+     "latency_s": 0.011,
+     "llm_latency_s": 0.0,
+     "cost_usd": 0.0,
+     "provider": "mock/rule-based",
+     "dropped": 0,
+     "n_comments": 0,
+     "errors": [],
+     "reasons": [
+      "clean; safe to auto-approve"
+     ],
+     "summary": "Clean, focused change for Weeks 3-4. No critical issues detected; tests and structure look fine. (mock review)",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s08-lru-cache-copied",
+     "seeded": [
+      "copied"
+     ],
+     "detected": {
+      "copied": true
+     },
+     "expected": "NEEDS_MENTOR",
+     "got": "NEEDS_MENTOR",
+     "ok": true,
+     "score": 4.8,
+     "latency_s": 0.014,
+     "llm_latency_s": 0.0,
+     "cost_usd": 0.0,
+     "provider": "mock/rule-based",
+     "dropped": 0,
+     "n_comments": 0,
+     "errors": [],
+     "reasons": [
+      "possible copied submission (similarity 100%)"
+     ],
+     "summary": "Clean, focused change for Weeks 3-4. No critical issues detected; tests and structure look fine. (mock review)",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s09-clean-react-filter",
+     "seeded": [],
+     "detected": {},
+     "expected": "AUTO_APPROVE",
+     "got": "AUTO_APPROVE",
+     "ok": true,
+     "score": 4.8,
+     "latency_s": 0.015,
+     "llm_latency_s": 0.0,
+     "cost_usd": 0.0,
+     "provider": "mock/rule-based",
+     "dropped": 0,
+     "n_comments": 0,
+     "errors": [],
+     "reasons": [
+      "clean; safe to auto-approve"
+     ],
+     "summary": "Clean, focused change for Weeks 5-6. No critical issues detected; tests and structure look fine. (mock review)",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s10-debug-leftovers",
+     "seeded": [
+      "debug-leftover",
+      "todo",
+      "bad-commit-message"
+     ],
+     "detected": {
+      "debug-leftover": true,
+      "todo": true,
+      "bad-commit-message": true
+     },
+     "expected": "NEEDS_MENTOR",
+     "got": "NEEDS_MENTOR",
+     "ok": true,
+     "score": 4.4,
+     "latency_s": 0.016,
+     "llm_latency_s": 0.0,
+     "cost_usd": 0.0,
+     "provider": "mock/rule-based",
+     "dropped": 0,
+     "n_comments": 2,
+     "errors": [],
+     "reasons": [
+      "2 warning(s)"
+     ],
+     "summary": "0 critical and 2 warning issue(s) found. Top issue: Debug print/console.log left in code. (mock review)",
+     "url": "",
+     "note": ""
+    }
+   ]
+  },
+  "real": {
+   "set": "real",
+   "rows": [
+    {
+     "id": "r01-requests-netrc-cve",
+     "seeded": [],
+     "detected": {},
+     "expected": "NEEDS_MENTOR",
+     "got": "AUTO_APPROVE",
+     "ok": false,
+     "score": 4.8,
+     "latency_s": 0.001,
+     "llm_latency_s": 0.0,
+     "cost_usd": 0.0,
+     "provider": "mock/rule-based",
+     "dropped": 0,
+     "n_comments": 0,
+     "errors": [],
+     "reasons": [
+      "clean; safe to auto-approve"
+     ],
+     "summary": "Clean, focused change for Weeks 5-6. No critical issues detected; tests and structure look fine. (mock review)",
+     "url": "https://github.com/psf/requests/pull/6963",
+     "note": "Security-sensitive: credential-leak fix in URL parsing; needs a human to judge."
+    },
+    {
+     "id": "r02-requests-encode-files",
+     "seeded": [],
+     "detected": {},
+     "expected": "AUTO_APPROVE",
+     "got": "AUTO_APPROVE",
+     "ok": true,
+     "score": 4.8,
+     "latency_s": 0.007,
+     "llm_latency_s": 0.0,
+     "cost_usd": 0.0,
+     "provider": "mock/rule-based",
+     "dropped": 0,
+     "n_comments": 0,
+     "errors": [],
+     "reasons": [
+      "clean; safe to auto-approve"
+     ],
+     "summary": "Clean, focused change for Weeks 5-6. No critical issues detected; tests and structure look fine. (mock review)",
+     "url": "https://github.com/psf/requests/pull/7502",
+     "note": "Small focused bug fix with a regression test."
+    },
+    {
+     "id": "r03-click-show-envvar",
+     "seeded": [],
+     "detected": {},
+     "expected": "AUTO_APPROVE",
+     "got": "AUTO_APPROVE",
+     "ok": true,
+     "score": 4.8,
+     "latency_s": 0.011,
+     "llm_latency_s": 0.0,
+     "cost_usd": 0.0,
+     "provider": "mock/rule-based",
+     "dropped": 0,
+     "n_comments": 0,
+     "errors": [],
+     "reasons": [
+      "clean; safe to auto-approve"
+     ],
+     "summary": "Clean, focused change for Weeks 5-6. No critical issues detected; tests and structure look fine. (mock review)",
+     "url": "https://github.com/pallets/click/pull/3884",
+     "note": "Focused bug fix with tests."
+    },
+    {
+     "id": "r04-flask-context-order",
+     "seeded": [],
+     "detected": {},
+     "expected": "NEEDS_MENTOR",
+     "got": "AUTO_APPROVE",
+     "ok": false,
+     "score": 4.8,
+     "latency_s": 0.008,
+     "llm_latency_s": 0.0,
+     "cost_usd": 0.0,
+     "provider": "mock/rule-based",
+     "dropped": 0,
+     "n_comments": 0,
+     "errors": [],
+     "reasons": [
+      "clean; safe to auto-approve"
+     ],
+     "summary": "Clean, focused change for Weeks 5-6. No critical issues detected; tests and structure look fine. (mock review)",
+     "url": "https://github.com/pallets/flask/pull/5797",
+     "note": "Changes request-context push ordering (core semantics); design judgement needed."
+    },
+    {
+     "id": "r05-express-normalize-test",
+     "seeded": [],
+     "detected": {},
+     "expected": "AUTO_APPROVE",
+     "got": "AUTO_APPROVE",
+     "ok": true,
+     "score": 4.8,
+     "latency_s": 0.012,
+     "llm_latency_s": 0.0,
+     "cost_usd": 0.0,
+     "provider": "mock/rule-based",
+     "dropped": 0,
+     "n_comments": 0,
+     "errors": [],
+     "reasons": [
+      "clean; safe to auto-approve"
+     ],
+     "summary": "Clean, focused change for Weeks 5-6. No critical issues detected; tests and structure look fine. (mock review)",
+     "url": "https://github.com/expressjs/express/pull/6894",
+     "note": "Test-only addition, tiny."
+    }
+   ]
+  }
+ }
+}

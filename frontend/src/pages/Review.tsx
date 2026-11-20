@@ -7,12 +7,12 @@ import { ErrorCard } from "../components/ui";
 
 const STEPS = ["Parsing diff", "Static checks", "LLM rubric review", "Similarity scan", "Triage"];
 
-function PipelineLoader() {
+function PipelineLoader({ live }: { live: boolean }) {
   const [i, setI] = useState(0);
   useEffect(() => {
-    const t = setInterval(() => setI((x) => Math.min(x + 1, STEPS.length - 1)), 750);
+    const t = setInterval(() => setI((x) => Math.min(x + 1, live ? 2 : STEPS.length - 1)), live ? 500 : 450); // live: hold on the LLM step until the real response arrives
     return () => clearInterval(t);
-  }, []);
+  }, [live]);
   return (
     <div className="card rise p-6 sm:p-8" role="status" aria-live="polite">
       <p className="label">Reviewing your PR</p>
@@ -68,7 +68,8 @@ export default function Review() {
       const body = sample ? { sample_id: sample.id, track, week }
         : mode === "url" ? { pr_url: url.trim(), track, week, intern: intern || undefined }
         : { diff, track, week, intern: intern || undefined };
-      const wait = new Promise((res) => setTimeout(res, 2300)); // let the pipeline animation play even when the reviewer is instant
+      // Only the instant demo reviewer is padded so the pipeline animation is visible; live reviews show their real latency.
+      const wait = new Promise((res) => setTimeout(res, health?.mode === "mock" ? 1800 : 0));
       const [r] = await Promise.all([api.review(body), wait]);
       setResult(r);
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
@@ -172,7 +173,7 @@ export default function Review() {
       </form>
 
       <div ref={resultRef} className="scroll-mt-24">
-        {busy && <PipelineLoader />}
+        {busy && <PipelineLoader live={health?.mode === "live"} />}
         {!busy && result && <ReviewResult r={result} />}
       </div>
     </div>

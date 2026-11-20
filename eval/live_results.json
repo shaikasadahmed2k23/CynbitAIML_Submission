@@ -1,0 +1,387 @@
+{
+ "date": "2026-11-20",
+ "sets": {
+  "synthetic": {
+   "set": "synthetic",
+   "rows": [
+    {
+     "id": "s01-clean-user-endpoint",
+     "seeded": [],
+     "detected": {},
+     "expected": "AUTO_APPROVE",
+     "got": "AUTO_APPROVE",
+     "ok": true,
+     "score": 4.4,
+     "latency_s": 3.285,
+     "llm_latency_s": 3.28,
+     "cost_usd": 0.000758,
+     "provider": "groq/openai/gpt-oss-120b",
+     "dropped": 0,
+     "n_comments": 5,
+     "errors": [],
+     "reasons": [
+      "clean; safe to auto-approve"
+     ],
+     "summary": "The endpoint correctly retrieves users and safely handles invalid input, and the tests verify 404 and validation behavior. Add authentication and consider externalizing the DB path for better alignment with the roadmap.",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s02-sqli-search",
+     "seeded": [
+      "sql-injection",
+      "missing-tests"
+     ],
+     "detected": {
+      "sql-injection": true,
+      "missing-tests": true
+     },
+     "expected": "BLOCKER",
+     "got": "BLOCKER",
+     "ok": true,
+     "score": 1.6,
+     "latency_s": 3.772,
+     "llm_latency_s": 3.75,
+     "cost_usd": 0.000812,
+     "provider": "groq/openai/gpt-oss-120b",
+     "dropped": 0,
+     "n_comments": 6,
+     "errors": [],
+     "reasons": [
+      "1 critical finding(s)",
+      "1 warning(s)"
+     ],
+     "summary": "The new search endpoint works but has a critical SQL injection risk and lacks tests or input validation, which conflicts with the current roadmap goals. Please address the security issue and add proper testing before proceeding.",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s03-leaked-openai-key",
+     "seeded": [
+      "hardcoded-secret",
+      "missing-tests"
+     ],
+     "detected": {
+      "hardcoded-secret": true,
+      "missing-tests": true
+     },
+     "expected": "BLOCKER",
+     "got": "BLOCKER",
+     "ok": true,
+     "score": 1.4,
+     "latency_s": 8.035,
+     "llm_latency_s": 8.01,
+     "cost_usd": 0.000798,
+     "provider": "groq/openai/gpt-oss-120b",
+     "dropped": 0,
+     "n_comments": 4,
+     "errors": [],
+     "reasons": [
+      "1 critical finding(s)",
+      "1 warning(s)"
+     ],
+     "summary": "The route works but has serious issues: a hard\u2011coded API key, no authentication, missing input validation, and no error handling or tests. These problems conflict with the current sprint\u2019s security and reliability goals.",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s04-no-tests-cart",
+     "seeded": [
+      "missing-tests"
+     ],
+     "detected": {
+      "missing-tests": true
+     },
+     "expected": "NEEDS_MENTOR",
+     "got": "NEEDS_MENTOR",
+     "ok": true,
+     "score": 3.8,
+     "latency_s": 16.291,
+     "llm_latency_s": 16.27,
+     "cost_usd": 0.000714,
+     "provider": "groq/openai/gpt-oss-120b",
+     "dropped": 0,
+     "n_comments": 3,
+     "errors": [],
+     "reasons": [
+      "1 warning(s)"
+     ],
+     "summary": "The core logic for calculating totals and applying coupons works, but the PR lacks tests and documentation, which are essential for the current learning stage.",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s05-n-plus-one-report",
+     "seeded": [
+      "n-plus-one"
+     ],
+     "detected": {
+      "n-plus-one": true
+     },
+     "expected": "NEEDS_MENTOR",
+     "got": "NEEDS_MENTOR",
+     "ok": true,
+     "score": 3.6,
+     "latency_s": 12.724,
+     "llm_latency_s": 12.7,
+     "cost_usd": 0.000775,
+     "provider": "groq/openai/gpt-oss-120b",
+     "dropped": 0,
+     "n_comments": 3,
+     "errors": [],
+     "reasons": [
+      "1 warning(s)"
+     ],
+     "summary": "The function works for the basic case but uses an N+1 query pattern and lacks handling for missing customers. Add a single JOIN query and improve edge\u2011case handling, plus expand tests.",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s06-race-counter",
+     "seeded": [
+      "race-condition"
+     ],
+     "detected": {
+      "race-condition": true
+     },
+     "expected": "NEEDS_MENTOR",
+     "got": "BLOCKER",
+     "ok": false,
+     "score": 2.8,
+     "latency_s": 8.552,
+     "llm_latency_s": 8.53,
+     "cost_usd": 0.000664,
+     "provider": "groq/openai/gpt-oss-120b",
+     "dropped": 0,
+     "n_comments": 2,
+     "errors": [],
+     "reasons": [
+      "1 warning(s)"
+     ],
+     "summary": "The implementation introduces a race condition by mutating a global counter from multiple threads without synchronization, leading to incorrect results. Add proper locking (or use thread\u2011safe constructs) and improve the test to reflect deterministic behavior.",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s07-lru-cache-original",
+     "seeded": [],
+     "detected": {},
+     "expected": "AUTO_APPROVE",
+     "got": "AUTO_APPROVE",
+     "ok": true,
+     "score": 4.6,
+     "latency_s": 22.826,
+     "llm_latency_s": 22.78,
+     "cost_usd": 0.000764,
+     "provider": "groq/openai/gpt-oss-120b",
+     "dropped": 0,
+     "n_comments": 6,
+     "errors": [],
+     "reasons": [
+      "clean; safe to auto-approve"
+     ],
+     "summary": "The LRU cache implementation works correctly and the provided tests cover basic eviction and invalid capacity handling. Adding a few type hints, a docstring, and an extra test for updating existing keys would improve code quality and test completeness.",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s08-lru-cache-copied",
+     "seeded": [
+      "copied"
+     ],
+     "detected": {
+      "copied": true
+     },
+     "expected": "NEEDS_MENTOR",
+     "got": "NEEDS_MENTOR",
+     "ok": true,
+     "score": 4.2,
+     "latency_s": 21.122,
+     "llm_latency_s": 21.1,
+     "cost_usd": 0.00184,
+     "provider": "gemini/gemini-2.5-flash",
+     "dropped": 0,
+     "n_comments": 5,
+     "errors": [
+      "groq: HTTPError: 429 {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kjrs38caebrvdj38xtysp"
+     ],
+     "reasons": [
+      "possible copied submission (similarity 100%)"
+     ],
+     "summary": "This PR introduces a correct and well-structured LRU cache implementation. The core logic is sound, and initial tests cover the main eviction behavior and invalid capacity handling. For a testing-focused week, consider expanding test coverage to include more edge cases and utility methods.",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s09-clean-react-filter",
+     "seeded": [],
+     "detected": {},
+     "expected": "AUTO_APPROVE",
+     "got": "AUTO_APPROVE",
+     "ok": true,
+     "score": 4.2,
+     "latency_s": 2.852,
+     "llm_latency_s": 2.82,
+     "cost_usd": 0.000668,
+     "provider": "groq/openai/gpt-oss-120b",
+     "dropped": 0,
+     "n_comments": 4,
+     "errors": [],
+     "reasons": [
+      "clean; safe to auto-approve"
+     ],
+     "summary": "The component works and includes basic accessibility, but add prop validation and guard against missing callbacks. Also handle potential duplicate \"all\" entries in the statuses list.",
+     "url": "",
+     "note": ""
+    },
+    {
+     "id": "s10-debug-leftovers",
+     "seeded": [
+      "debug-leftover",
+      "todo",
+      "bad-commit-message"
+     ],
+     "detected": {
+      "debug-leftover": true,
+      "todo": true,
+      "bad-commit-message": true
+     },
+     "expected": "NEEDS_MENTOR",
+     "got": "NEEDS_MENTOR",
+     "ok": true,
+     "score": 2.8,
+     "latency_s": 3.03,
+     "llm_latency_s": 3.02,
+     "cost_usd": 0.000692,
+     "provider": "groq/openai/gpt-oss-120b",
+     "dropped": 0,
+     "n_comments": 4,
+     "errors": [],
+     "reasons": [
+      "2 warning(s)"
+     ],
+     "summary": "The core logic works, but debug logs and a leftover TODO remain, and the test suite is minimal and doesn\u2019t verify real login behavior. Add proper tests and clean up debugging output to align with the QA track goals.",
+     "url": "",
+     "note": ""
+    }
+   ]
+  },
+  "real": {
+   "set": "real",
+   "rows": [
+    {
+     "id": "r01-requests-netrc-cve",
+     "seeded": [],
+     "detected": {},
+     "expected": "NEEDS_MENTOR",
+     "got": "NEEDS_MENTOR",
+     "ok": true,
+     "score": 3.6,
+     "latency_s": 13.855,
+     "llm_latency_s": 13.85,
+     "cost_usd": 0.000825,
+     "provider": "groq/openai/gpt-oss-120b",
+     "dropped": 0,
+     "n_comments": 3,
+     "errors": [],
+     "reasons": [
+      "AI reviewer recommended a mentor look (no static findings)"
+     ],
+     "summary": "Good effort adding tests for netrc authentication and addressing a URL parsing issue. However, removing the safe expanduser handling can cause crashes when the HOME environment variable is missing, which needs attention.",
+     "url": "https://github.com/psf/requests/pull/6963",
+     "note": "Security-sensitive: credential-leak fix in URL parsing; needs a human to judge."
+    },
+    {
+     "id": "r02-requests-encode-files",
+     "seeded": [],
+     "detected": {},
+     "expected": "AUTO_APPROVE",
+     "got": "NEEDS_MENTOR",
+     "ok": false,
+     "score": 4.2,
+     "latency_s": 24.187,
+     "llm_latency_s": 24.17,
+     "cost_usd": 0.000831,
+     "provider": "groq/openai/gpt-oss-120b",
+     "dropped": 0,
+     "n_comments": 2,
+     "errors": [],
+     "reasons": [
+      "AI reviewer recommended a mentor look (no static findings)"
+     ],
+     "summary": "The fix broadens file detection to support attribute\u2011proxy objects and adds a test for named temporary files, which improves functionality. Ensure the new check safely handles non\u2011callable read attributes and clean up duplicate comments.",
+     "url": "https://github.com/psf/requests/pull/7502",
+     "note": "Small focused bug fix with a regression test."
+    },
+    {
+     "id": "r03-click-show-envvar",
+     "seeded": [],
+     "detected": {},
+     "expected": "AUTO_APPROVE",
+     "got": "AUTO_APPROVE",
+     "ok": true,
+     "score": 4.8,
+     "latency_s": 18.911,
+     "llm_latency_s": 18.88,
+     "cost_usd": 0.00154,
+     "provider": "groq/openai/gpt-oss-120b",
+     "dropped": 0,
+     "n_comments": 2,
+     "errors": [],
+     "reasons": [
+      "clean; safe to auto-approve"
+     ],
+     "summary": "The changes correctly handle empty and sequence envvar values, updating help and error messages as intended, and the new tests cover these scenarios. Code is clear and aligns well with the core architecture goals.",
+     "url": "https://github.com/pallets/click/pull/3884",
+     "note": "Focused bug fix with tests."
+    },
+    {
+     "id": "r04-flask-context-order",
+     "seeded": [],
+     "detected": {},
+     "expected": "NEEDS_MENTOR",
+     "got": "AUTO_APPROVE",
+     "ok": false,
+     "score": 4.8,
+     "latency_s": 33.343,
+     "llm_latency_s": 33.33,
+     "cost_usd": 0.001757,
+     "provider": "gemini/gemini-2.5-flash",
+     "dropped": 0,
+     "n_comments": 4,
+     "errors": [
+      "groq: HTTPError: 429 {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kjrs38caebrvdj38xtysp"
+     ],
+     "reasons": [
+      "clean; safe to auto-approve"
+     ],
+     "summary": "Excellent work on this pull request! The core logic fix in `flask/testing.py` correctly addresses the issue of context ordering during redirects, ensuring proper session state preservation. The new test case is well-designed and effectively validates the corrected behavior, demonstrating a strong understanding of the problem and its solution.",
+     "url": "https://github.com/pallets/flask/pull/5797",
+     "note": "Changes request-context push ordering (core semantics); design judgement needed."
+    },
+    {
+     "id": "r05-express-normalize-test",
+     "seeded": [],
+     "detected": {},
+     "expected": "AUTO_APPROVE",
+     "got": "AUTO_APPROVE",
+     "ok": true,
+     "score": 5.0,
+     "latency_s": 1.953,
+     "llm_latency_s": 1.93,
+     "cost_usd": 0.000404,
+     "provider": "groq/openai/gpt-oss-120b",
+     "dropped": 0,
+     "n_comments": 0,
+     "errors": [],
+     "reasons": [
+      "clean; safe to auto-approve"
+     ],
+     "summary": "Good addition of a test covering the fallback behavior of utils.normalizeType when MIME lookup fails. The test is clear, concise, and aligns with the core architecture goals.",
+     "url": "https://github.com/expressjs/express/pull/6894",
+     "note": "Test-only addition, tiny."
+    }
+   ]
+  }
+ }
+}
