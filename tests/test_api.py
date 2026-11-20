@@ -167,3 +167,30 @@ def test_cache_returns_same_review_instantly(client, monkeypatch):
     monkeypatch.setattr(pipeline, "review_pr", lambda *x, **k: (_ for _ in ()).throw(AssertionError("not cached")))
     b = client.post("/api/review", json=body).json()
     assert a["id"] == b["id"]
+
+
+def test_counts_include_llm_comments_and_pluralize(client):
+    from app.core.llm_reviewer import InlineComment, ReviewResult, Scores
+    from app.core.triage import decide, format_counts, severity_counts
+    from app.core.static_checks import Finding
+    sc = Scores(correctness=3, code_quality=3, security=3, testing=3, roadmap_alignment=3)
+    cm = lambda sev: InlineComment(file="a.py", line=1, severity=sev, comment="Some comment", suggestion="")  # noqa: E731
+    llm = ReviewResult(scores=sc, overall_score=3.0, summary="Summary text.", triage="NEEDS_MENTOR",
+                       inline_comments=[cm("warning")] * 4 + [cm("info")] * 2)
+    f = [Finding("todo", "warning", "t", "a.py", 1)]
+    c = severity_counts(f, llm)
+    assert c == {"critical": 0, "warning": 5, "info": 2}
+    assert format_counts(c) == "0 critical · 5 warnings · 2 info"
+    assert "1 warning ·" in format_counts({"critical": 0, "warning": 1, "info": 0})
+    assert any("5 warnings" in r for r in decide(llm, f).reasons)
+
+
+def test_cached_response_is_flagged(client):
+    body = {"diff": VULN, "track": "Python Backend", "week": "Weeks 5-6: Core architecture (auth, DB, APIs)"}
+    a = client.post("/api/review", json=body).json()
+    b = client.post("/api/review", json=body).json()
+    assert a["cached"] is False and b["cached"] is True and b["served_in_s"] < 1
+    assert b["pipeline_latency_s"] == a["pipeline_latency_s"]  # original latency kept for the sub-line
+    assert b["critical"] == a["critical"] >= 1 and "warnings" in b
+    q = client.get("/api/queue").json()[0]
+    assert {"critical", "warnings", "info"} <= q.keys()

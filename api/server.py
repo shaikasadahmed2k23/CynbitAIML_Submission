@@ -29,6 +29,7 @@ from app.core.llm_reviewer import ReviewMeta, ReviewResult, get_secret  # noqa: 
 from app.core.pipeline import SAMPLES_DIR, Store, Submission, analyze, load_samples, preload_samples  # noqa: E402
 from app.core.rubric import TRACKS, WEEKS  # noqa: E402
 from app.core.similarity import DEFAULT_THRESHOLD  # noqa: E402
+from app.core.triage import severity_counts  # noqa: E402
 
 DIST = ROOT / "frontend" / "dist"
 MAX_DIFF_BYTES = 300_000
@@ -70,6 +71,11 @@ class DiffFile(BaseModel):
 
 
 class ReviewResponse(BaseModel):
+    critical: int = 0   # static findings + LLM inline comments
+    warnings: int = 0
+    info: int = 0
+    cached: bool = False
+    served_in_s: float | None = None   # wall time of this request when served from cache
     id: str
     intern: str
     track: str
@@ -107,6 +113,7 @@ class QueueItem(BaseModel):
     priority: float
     critical: int
     warnings: int
+    info: int
     similarity_top: float
     similar_to: str | None
     similarity_flag: bool
@@ -149,6 +156,11 @@ class SampleDetail(SampleMeta):
 
 
 # ------------------------------------------------------------------ helpers
+class _F:  # adapter: stored findings are dicts, severity_counts wants .severity
+    def __init__(self, d: dict):
+        self.severity = d["severity"]
+
+
 def _diff_files(diff_text: str, limit: int = 400) -> list[DiffFile]:
     out = []
     for f in parse_diff(diff_text).files:
@@ -170,9 +182,11 @@ def _diff_for(sub: Submission) -> str:
     return p.read_text(encoding="utf-8") if p.exists() else ""
 
 
-def _to_response(sub: Submission, flag_threshold: float = DEFAULT_THRESHOLD) -> ReviewResponse:
+def _to_response(sub: Submission, flag_threshold: float = DEFAULT_THRESHOLD, **extra) -> ReviewResponse:
     d = sub.model_dump(exclude={"added_code", "commits"})
-    return ReviewResponse(**d, similarity_flag=sub.similarity_top >= flag_threshold,
+    c = severity_counts([_F(f) for f in sub.findings], sub.review)
+    return ReviewResponse(**d, critical=c["critical"], warnings=c["warning"], info=c["info"], **extra,
+                          similarity_flag=sub.similarity_top >= flag_threshold,
                           diff_files=_diff_files(_diff_for(sub)))
 
 
@@ -234,10 +248,11 @@ def review(req: ReviewRequest, request: Request) -> ReviewResponse:
     key = hashlib.sha256(f"{req.track}|{req.week}|{diff_text}".encode()).hexdigest()
     with _lock:
         hit = _cache.get(key)
+    t_req = time.perf_counter()
     if hit and time.time() - hit[0] < CACHE_TTL:
         cached = next((x for x in store.items if x.id == hit[1]), None)
         if cached:
-            return _to_response(cached)
+            return _to_response(cached, cached=True, served_in_s=round(time.perf_counter() - t_req, 3))
     if source != "github" and not req.sample_id:
         _rate_limit(request)
 
@@ -262,11 +277,11 @@ def get_review(sub_id: str) -> ReviewResponse:
 @app.get("/api/queue", response_model=list[QueueItem])
 def queue(triage: str | None = None) -> list[QueueItem]:
     items = sorted(store.items, key=lambda s: -s.priority)
+    cnt = {s.id: severity_counts([_F(f) for f in s.findings], s.review) for s in items}
     return [QueueItem(
         id=s.id, title=s.title, intern=s.intern, track=s.track, week=s.week, source=s.source,
         score=s.review.overall_score, triage=s.final_triage, priority=s.priority,
-        critical=sum(f["severity"] == "critical" for f in s.findings),
-        warnings=sum(f["severity"] == "warning" for f in s.findings),
+        critical=cnt[s.id]["critical"], warnings=cnt[s.id]["warning"], info=cnt[s.id]["info"],
         similarity_top=s.similarity_top, similar_to=s.similar_to,
         similarity_flag=s.similarity_top >= DEFAULT_THRESHOLD, reasons=s.reasons, created_at=s.created_at,
     ) for s in items if not triage or s.final_triage == triage]

@@ -87,7 +87,7 @@ def run_static_checks(diff: ParsedDiff, commit_messages: list[str] | None = None
     src = [f for f in diff.files if is_source_file(f.path) and not f.is_deleted and f.added]
     has_tests = any(is_test_file(f.path) and f.added for f in diff.files)
     if src and not has_tests:
-        out.append(Finding("missing-tests", "warning", f"{len(src)} source file(s) changed but no tests added/updated.", src[0].path))
+        out.append(Finding("missing-tests", "warning", f"{len(src)} source file{'' if len(src) == 1 else 's'} changed but no tests added/updated.", src[0].path))
 
     total = diff.added_lines + diff.removed_lines
     if total > BIG_PR_LINES:

@@ -11,6 +11,20 @@ REVIEW_MIN_AFTER_AI = 3    # assumed minutes to skim an AI-reviewed escalation
 REVIEW_MIN_AUTO = 1        # assumed minutes to spot-check an auto-approved PR
 
 
+def plural(n: int, word: str) -> str:
+    return f"{n} {word}{'' if n == 1 else 's'}"
+
+
+def severity_counts(findings: list[Finding], llm: ReviewResult) -> dict[str, int]:
+    """Critical / warning / info counts over BOTH static findings and the LLM's inline comments."""
+    sev = [f.severity for f in findings] + [c.severity for c in llm.inline_comments]
+    return {k: sev.count(k) for k in ("critical", "warning", "info")}
+
+
+def format_counts(c: dict[str, int]) -> str:
+    return f"{c['critical']} critical · {plural(c['warning'], 'warning')} · {c['info']} info"
+
+
 @dataclass
 class TriageDecision:
     final_triage: str
@@ -44,10 +58,9 @@ def decide(llm: ReviewResult, findings: list[Finding], similarity_top: float = 0
     if copied:
         priority += 15
     priority = round(min(100.0, priority), 1)
-    if crit:
-        reasons.append(f"{crit} critical finding(s)")
-    if warn:
-        reasons.append(f"{warn} warning(s)")
+    counts = severity_counts(findings, llm)
+    if counts["critical"] or counts["warning"]:
+        reasons.append(format_counts(counts) + " (static checks + AI comments)")
     if not reasons:
         reasons.append("clean; safe to auto-approve" if triage == "AUTO_APPROVE"
                        else "AI reviewer recommended a mentor look (no static findings)")

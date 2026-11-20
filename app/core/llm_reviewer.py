@@ -242,7 +242,7 @@ def mock_review(diff: ParsedDiff, findings: list[Finding], track: str, week: str
         summary = f"Clean, focused change for {stage}. No critical issues detected; tests and structure look fine. (mock review)"
     else:
         top = (crit or warn)[0].message if (crit or warn) else "overall score is below the auto-approve bar"
-        summary = f"{len(crit)} critical and {len(warn)} warning issue(s) found. Top issue: {top} (mock review)"
+        summary = f"{len(crit)} critical and {len(warn)} warning issue{'' if len(warn) + len(crit) == 1 else 's'} found. Top issue: {top} (mock review)"
     return ReviewResult(scores=s, overall_score=overall, summary=summary, inline_comments=comments[:8], triage=triage)
 
 

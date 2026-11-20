@@ -19,11 +19,12 @@ export interface ReviewResponse {
   similarity_top: number; similar_to: string | null; similarity_flag: boolean;
   final_triage: Triage; priority: number; reasons: string[]; minutes_saved: number; pipeline_latency_s: number;
   diff_files: DiffFile[];
+  critical: number; warnings: number; info: number; cached?: boolean; served_in_s?: number | null;
 }
 
 export interface QueueItem {
   id: string; title: string; intern: string; track: string; week: string; source: string; score: number;
-  triage: Triage; priority: number; critical: number; warnings: number; similarity_top: number;
+  triage: Triage; priority: number; critical: number; warnings: number; info: number; similarity_top: number;
   similar_to: string | null; similarity_flag: boolean; reasons: string[]; created_at: string;
 }
 export interface Stats {

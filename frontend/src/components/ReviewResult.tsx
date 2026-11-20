@@ -79,7 +79,6 @@ export default function ReviewResult({ r }: { r: ReviewResponse }) {
     r.review.inline_comments.forEach((c) => m.set(c.file, [...(m.get(c.file) ?? []), c]));
     return [...m.entries()];
   }, [r]);
-  const sev = (s: string) => r.findings.filter((f) => f.severity === s).length;
 
   return (
     <div className="rise space-y-6">
@@ -91,7 +90,7 @@ export default function ReviewResult({ r }: { r: ReviewResponse }) {
             <div className="flex flex-wrap items-center gap-2">
               <TriageBadge triage={r.final_triage} />
               <span className="chip border-line bg-cardAlt text-muted">Priority {r.priority}</span>
-              <span className="chip border-line bg-cardAlt text-muted">{sev("critical")} critical · {sev("warning")} warnings</span>
+              <span className="chip border-line bg-cardAlt text-muted">{r.critical} critical · {r.warnings} {r.warnings === 1 ? "warning" : "warnings"} · {r.info} info</span>
             </div>
             <h2 className="mt-3 break-words text-xl font-extrabold sm:text-2xl">{r.title}</h2>
             <p className="hint mt-1">{r.id} · {r.n_files} file{r.n_files === 1 ? "" : "s"} · +{r.added}/−{r.removed} · {r.languages.join(", ") || "n/a"} · by {r.intern}</p>
@@ -100,12 +99,13 @@ export default function ReviewResult({ r }: { r: ReviewResponse }) {
         </div>
         <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 border-t border-line pt-4">
           <span className="chip border-primary/30 bg-primary-tint text-primary-dark" title="Provider and measured end-to-end pipeline time">
-            <Cpu className="h-3.5 w-3.5" aria-hidden />{providerLabel(r.meta)} · {r.pipeline_latency_s.toFixed(1)}s
+            <Cpu className="h-3.5 w-3.5" aria-hidden />
+            {r.cached ? `Cached · ${(r.served_in_s ?? 0).toFixed(2)}s` : `${providerLabel(r.meta)} · ${r.pipeline_latency_s.toFixed(1)}s`}
           </span>
-          <span className="hint flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" aria-hidden />{r.meta.provider === "mock" ? (r.meta.demo_fallback ? "LLM providers unavailable or timed out, rule-based review shown" : "rule-based demo reviewer, no LLM call") : `${r.meta.model} · LLM call ${r.meta.latency_s.toFixed(1)}s (measured, not simulated)`}</span>
+          <span className="hint flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" aria-hidden />{r.cached ? `originally ${providerLabel(r.meta)} · ${r.meta.provider === "mock" ? "rule-based" : r.meta.model} · ${r.pipeline_latency_s.toFixed(1)}s` : r.meta.provider === "mock" ? (r.meta.demo_fallback ? "LLM providers unavailable or timed out, rule-based review shown" : "rule-based demo reviewer, no LLM call") : `${r.meta.model} · LLM call ${r.meta.latency_s.toFixed(1)}s (measured, not simulated)`}</span>
           <span className="hint flex items-center gap-1.5"><ListChecks className="h-3.5 w-3.5" aria-hidden />~{r.minutes_saved} mentor-min saved</span>
           {r.meta.cost_usd > 0 && <span className="hint">${r.meta.cost_usd.toFixed(5)} LLM cost</span>}
-          {r.meta.dropped_comments > 0 && <span className="hint">{r.meta.dropped_comments} unverifiable AI comment(s) dropped</span>}
+          {r.meta.dropped_comments > 0 && <span className="hint">{r.meta.dropped_comments} unverifiable AI {r.meta.dropped_comments === 1 ? "comment" : "comments"} dropped</span>}
         </div>
         {r.meta.fallback_errors.length > 0 && (
           <p className="hint mt-3 rounded-xl bg-warn-soft px-3 py-2 !text-warn">Fell back after provider error: {r.meta.fallback_errors.join(" | ")}</p>

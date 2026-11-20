@@ -171,7 +171,7 @@ with tab_intern:
             st.error(str(e))
     if (last := st.session_state.get("last")):
         st.divider()
-        st.caption(f"Submission `{last.id}` · {last.n_files} files · +{last.added}/-{last.removed} · {', '.join(last.languages) or 'n/a'}")
+        st.caption(f"Submission `{last.id}` · {last.n_files} file{"" if last.n_files == 1 else "s"} · +{last.added}/-{last.removed} · {', '.join(last.languages) or 'n/a'}")
         render_result(last, "intern")
 
 # ------------------------------------------------------------------ mentor
@@ -191,8 +191,8 @@ with tab_mentor:
 
     flt = st.multiselect("Filter triage", list(BADGE), default=list(BADGE))
     rows = [{"Priority": s.priority, "Triage": BADGE[s.final_triage], "PR": s.id, "Intern": s.intern, "Track": s.track,
-             "Score": s.review.overall_score, "Critical": sum(f["severity"] == "critical" for f in s.findings),
-             "Warnings": sum(f["severity"] == "warning" for f in s.findings),
+             "Score": s.review.overall_score, "Critical": sum(f["severity"] == "critical" for f in s.findings) + sum(c.severity == "critical" for c in s.review.inline_comments),
+             "Warnings": sum(f["severity"] == "warning" for f in s.findings) + sum(c.severity == "warning" for c in s.review.inline_comments),
              "Copy flag": f"⚠️ {s.similarity_top:.0%} ~ {s.similar_to}" if s.similarity_top >= threshold else "",
              "Why": "; ".join(s.reasons)} for s in items if s.final_triage in flt]
     st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)

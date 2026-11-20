@@ -135,9 +135,10 @@ export default function Queue() {
                     <td className="px-4 py-3.5">
                       <div className="flex flex-wrap gap-1.5">
                         {i.critical > 0 && <span className="chip border-bad-line bg-bad-soft text-bad">{i.critical} critical</span>}
-                        {i.warnings > 0 && <span className="chip border-warn-line bg-warn-soft text-warn">{i.warnings} warn</span>}
+                        {i.warnings > 0 && <span className="chip border-warn-line bg-warn-soft text-warn">{i.warnings} {i.warnings === 1 ? "warning" : "warnings"}</span>}
+                        {i.info > 0 && <span className="chip border-line bg-cardAlt text-muted">{i.info} info</span>}
                         {i.similarity_flag && <span className="chip border-warn-line bg-warn-soft text-warn" title={`Similar to ${i.similar_to}`}><Copy className="h-3 w-3" aria-hidden />{Math.round(i.similarity_top * 100)}% copy</span>}
-                        {!i.critical && !i.warnings && !i.similarity_flag && <span className="hint">none</span>}
+                        {!i.critical && !i.warnings && !i.info && !i.similarity_flag && <span className="hint">none</span>}
                       </div>
                     </td>
                   </tr>
