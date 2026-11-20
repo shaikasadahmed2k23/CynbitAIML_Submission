@@ -2,7 +2,7 @@
 
 **AI first-pass PR reviewer and mentor-triage queue for Cynbit's BitElevate internship: every daily PR gets scored, explained and prioritised in seconds, so mentors only deep-review what needs a human.**
 
-- **Live demo:** _<add Streamlit Community Cloud URL here>_
+- **Live demo:** https://cynbitaiml-submission.onrender.com (Render free tier: the first load may take ~50 s while the instance wakes up)
 - **Reports:** [AI Opportunity Report](docs/AI_Opportunity_Report.md) · [Technical Approach](docs/Technical_Approach.md) · [Evaluation results](eval/results.md)
 
 ## Screenshots
