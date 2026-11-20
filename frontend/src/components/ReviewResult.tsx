@@ -10,7 +10,7 @@ const RUBRIC: [keyof ReviewResponse["review"]["scores"], string][] = [
   ["testing", "Testing"], ["roadmap_alignment", "Roadmap alignment"],
 ];
 
-const providerLabel = (p: string) => (p === "groq" ? "Groq" : p === "gemini" ? "Gemini" : "Demo mode");
+const providerLabel = (m: ReviewResponse["meta"]) => (m.provider === "groq" ? "Groq" : m.provider === "gemini" ? "Gemini" : m.demo_fallback ? "Demo fallback" : "Demo mode");
 
 function FileSnippet({ file, comments }: { file: DiffFile; comments: InlineComment[] }) {
   const [all, setAll] = useState(false);
@@ -100,9 +100,9 @@ export default function ReviewResult({ r }: { r: ReviewResponse }) {
         </div>
         <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 border-t border-line pt-4">
           <span className="chip border-primary/30 bg-primary-tint text-primary-dark" title="Provider and measured end-to-end pipeline time">
-            <Cpu className="h-3.5 w-3.5" aria-hidden />{providerLabel(r.meta.provider)} · {r.pipeline_latency_s.toFixed(1)}s
+            <Cpu className="h-3.5 w-3.5" aria-hidden />{providerLabel(r.meta)} · {r.pipeline_latency_s.toFixed(1)}s
           </span>
-          <span className="hint flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" aria-hidden />{r.meta.provider === "mock" ? "rule-based demo reviewer, no LLM call" : `${r.meta.model} · LLM call ${r.meta.latency_s.toFixed(1)}s (measured, not simulated)`}</span>
+          <span className="hint flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" aria-hidden />{r.meta.provider === "mock" ? (r.meta.demo_fallback ? "LLM providers unavailable or timed out, rule-based review shown" : "rule-based demo reviewer, no LLM call") : `${r.meta.model} · LLM call ${r.meta.latency_s.toFixed(1)}s (measured, not simulated)`}</span>
           <span className="hint flex items-center gap-1.5"><ListChecks className="h-3.5 w-3.5" aria-hidden />~{r.minutes_saved} mentor-min saved</span>
           {r.meta.cost_usd > 0 && <span className="hint">${r.meta.cost_usd.toFixed(5)} LLM cost</span>}
           {r.meta.dropped_comments > 0 && <span className="hint">{r.meta.dropped_comments} unverifiable AI comment(s) dropped</span>}

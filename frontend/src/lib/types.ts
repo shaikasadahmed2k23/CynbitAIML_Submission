@@ -6,7 +6,7 @@ export interface InlineComment { file: string; line: number; severity: Severity;
 export interface Finding { rule: string; severity: Severity; message: string; file: string; line: number | null }
 export interface ReviewMeta {
   provider: string; model: string; latency_s: number; input_tokens: number; output_tokens: number;
-  cost_usd: number; fallback_errors: string[]; dropped_comments: number;
+  cost_usd: number; fallback_errors: string[]; dropped_comments: number; demo_fallback?: boolean;
 }
 export interface DiffLine { n: number | null; kind: "add" | "del" | "ctx"; text: string }
 export interface DiffFile { path: string; language: string; lines: DiffLine[]; truncated: boolean }

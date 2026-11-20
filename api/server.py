@@ -4,6 +4,7 @@ Run:  uvicorn api.server:app --reload --port 8000
 """
 from __future__ import annotations
 
+import hashlib
 import sys
 import threading
 import time
@@ -39,6 +40,8 @@ preload_samples(store)
 _DIFFS: dict[str, str] = {}         # id -> raw diff for user-submitted reviews (in memory)
 _hits: dict[str, deque] = defaultdict(deque)
 _lock = threading.Lock()
+CACHE_TTL = 300  # seconds
+_cache: dict[str, tuple[float, str]] = {}  # sha256(diff|track|week) -> (time, submission id)
 
 
 # ------------------------------------------------------------------ models
@@ -228,6 +231,13 @@ def review(req: ReviewRequest, request: Request) -> ReviewResponse:
         raise HTTPException(413, f"Diff too large (> {MAX_DIFF_BYTES // 1000} KB). Split the PR into smaller ones.")
     if not parse_diff(diff_text).files:
         raise HTTPException(422, "That does not look like a unified diff (no files found). Paste the output of `git diff`.")
+    key = hashlib.sha256(f"{req.track}|{req.week}|{diff_text}".encode()).hexdigest()
+    with _lock:
+        hit = _cache.get(key)
+    if hit and time.time() - hit[0] < CACHE_TTL:
+        cached = next((x for x in store.items if x.id == hit[1]), None)
+        if cached:
+            return _to_response(cached)
     if source != "github" and not req.sample_id:
         _rate_limit(request)
 
@@ -235,6 +245,9 @@ def review(req: ReviewRequest, request: Request) -> ReviewResponse:
                   source=source, sub_id=sub_id)
     if sub.source != "sample":
         _DIFFS[sub.id] = diff_text
+    if not sub.meta.demo_fallback:  # never cache a degraded answer: the next try may reach the LLM
+        with _lock:
+            _cache[key] = (time.time(), sub.id)
     return _to_response(sub)
 
 
@@ -292,6 +305,7 @@ def reset() -> dict:
     """Restore the demo data set (user submissions are removed)."""
     store.reset()
     _DIFFS.clear()
+    _cache.clear()
     preload_samples(store)
     return {"ok": True, "total": len(store.items)}
 

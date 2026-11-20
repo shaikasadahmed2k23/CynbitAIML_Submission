@@ -24,6 +24,7 @@ GROQ_PRICE = _GROQ_PRICES.get(GROQ_MODEL, (0.59, 0.79))
 GEMINI_PRICE = (0.30, 2.50)  # gemini-2.5-flash list price
 MAX_DIFF_CHARS = 24_000
 TIMEOUT = 40
+REVIEW_DEADLINE_S = 25  # overall budget per review across providers; then the demo fallback answers
 
 Triage = Literal["AUTO_APPROVE", "NEEDS_MENTOR", "BLOCKER"]
 
@@ -67,6 +68,7 @@ class ReviewMeta(BaseModel):
     cost_usd: float = 0.0
     fallback_errors: list[str] = []
     dropped_comments: int = 0
+    demo_fallback: bool = False  # keys were configured but every provider failed / timed out
 
 
 # ---------- secrets ----------
@@ -159,34 +161,29 @@ def _extract_json(text: str) -> dict:
         return json.loads(m.group(0))
 
 
-def _call_groq(system: str, user: str, key: str) -> tuple[str, int, int]:
-    for attempt in range(2):  # one retry on 429 (free-tier rate limits)
-        r = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers={"Authorization": f"Bearer {key}"},
-            json={"model": GROQ_MODEL, "temperature": 0.1, "response_format": {"type": "json_object"},
-                  "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]},
-            timeout=TIMEOUT,
-        )
-        if r.status_code == 429 and attempt == 0:
-            time.sleep(min(float(r.headers.get("retry-after", 5)), 20))
-            continue
-        break
-    if not r.ok:
+def _call_groq(system: str, user: str, key: str, timeout: float = TIMEOUT) -> tuple[str, int, int]:
+    r = requests.post(
+        "https://api.groq.com/openai/v1/chat/completions",
+        headers={"Authorization": f"Bearer {key}"},
+        json={"model": GROQ_MODEL, "temperature": 0.1, "response_format": {"type": "json_object"},
+              "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]},
+        timeout=timeout,
+    )
+    if not r.ok:  # incl. 429: no retry or backoff, the caller falls through to the next provider immediately
         raise requests.HTTPError(f"{r.status_code} {r.text[:160]}")
     j = r.json()
     u = j.get("usage", {})
     return j["choices"][0]["message"]["content"], u.get("prompt_tokens", 0), u.get("completion_tokens", 0)
 
 
-def _call_gemini(system: str, user: str, key: str) -> tuple[str, int, int]:
+def _call_gemini(system: str, user: str, key: str, timeout: float = TIMEOUT) -> tuple[str, int, int]:
     r = requests.post(
         f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent",
         headers={"x-goog-api-key": key},
         json={"systemInstruction": {"parts": [{"text": system}]},
               "contents": [{"role": "user", "parts": [{"text": user}]}],
               "generationConfig": {"temperature": 0.1, "responseMimeType": "application/json"}},
-        timeout=TIMEOUT,
+        timeout=timeout,
     )
     r.raise_for_status()
     j = r.json()
@@ -271,8 +268,12 @@ def review_pr(diff: ParsedDiff, findings: list[Finding], track: str, week: str,
             providers.append(("gemini", GEMINI_MODEL, _call_gemini, k, GEMINI_PRICE))
 
     for name, model, fn, key, price in providers:
+        remaining = REVIEW_DEADLINE_S - (time.perf_counter() - t0)
+        if remaining < 1:
+            errors.append(f"{name}: skipped, {REVIEW_DEADLINE_S}s review budget used up")
+            continue
         try:
-            raw, tin, tout = fn(system, user, key)
+            raw, tin, tout = fn(system, user, key, min(TIMEOUT, remaining))
             res = ReviewResult.model_validate(_extract_json(raw))
             res, dropped = sanitize_result(res, diff)
             tin = tin or _estimate_tokens(system + user)
@@ -287,4 +288,4 @@ def review_pr(diff: ParsedDiff, findings: list[Finding], track: str, week: str,
     res = mock_review(diff, findings, track, week)
     return res, ReviewMeta(provider="mock", model="rule-based", latency_s=round(time.perf_counter() - t0, 3),
                            input_tokens=_estimate_tokens(system + user), output_tokens=250,
-                           cost_usd=0.0, fallback_errors=errors)
+                           cost_usd=0.0, fallback_errors=errors, demo_fallback=bool(providers))

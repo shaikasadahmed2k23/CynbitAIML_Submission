@@ -17,6 +17,7 @@ def client(tmp_path, monkeypatch):
     preload_samples(st)
     monkeypatch.setattr(server, "store", st)
     server._hits.clear()
+    server._cache.clear()
     return TestClient(server.app)
 
 
@@ -106,3 +107,63 @@ def test_store_is_seeded_when_file_missing(tmp_path):
     preload_samples(s)
     assert len(s.items) == len(load_samples()) == 10
     assert all(x.meta.provider == "mock" for x in s.items)  # seeding never spends LLM quota
+
+
+def test_groq_429_falls_back_to_gemini_without_retry(monkeypatch):
+    from app.core import llm_reviewer as L
+    calls = {"groq": 0, "gemini": 0}
+
+    class R:
+        ok = False
+        status_code = 429
+        text = "rate limited"
+        headers = {"retry-after": "30"}
+
+    def fake_post(url, **kw):
+        calls["groq"] += 1
+        return R()
+
+    def fake_gemini(system, user, key, timeout=40):
+        calls["gemini"] += 1
+        import json
+        return json.dumps({"scores": {"correctness": 4, "code_quality": 4, "security": 4, "testing": 4, "roadmap_alignment": 4},
+                           "overall_score": 4.0, "summary": "Looks good overall.", "inline_comments": [], "triage": "AUTO_APPROVE"}), 10, 10
+
+    monkeypatch.setenv("GROQ_API_KEY", "x"); monkeypatch.setenv("GEMINI_API_KEY", "y")
+    monkeypatch.setattr(L.requests, "post", fake_post)
+    monkeypatch.setattr(L, "_call_gemini", fake_gemini)
+    import time
+    from app.core.diff_parser import parse_diff
+    t = time.time()
+    res, meta = L.review_pr(parse_diff(VULN), [], "Python Backend", list(L.WEEKS)[0])
+    assert meta.provider == "gemini", meta.fallback_errors
+    assert calls == {"groq": 1, "gemini": 1} and time.time() - t < 2
+
+
+def test_all_providers_fail_gives_labeled_demo_fallback(monkeypatch):
+    from app.core import llm_reviewer as L
+    from app.core.diff_parser import parse_diff
+
+    def boom(*a, **k):
+        raise L.requests.Timeout("slow")
+    monkeypatch.setenv("GROQ_API_KEY", "x"); monkeypatch.setenv("GEMINI_API_KEY", "y")
+    monkeypatch.setattr(L.requests, "post", boom); monkeypatch.setattr(L, "_call_gemini", boom)
+    _, meta = L.review_pr(parse_diff(VULN), [], "Python Backend", list(L.WEEKS)[0])
+    assert meta.provider == "mock" and meta.demo_fallback and len(meta.fallback_errors) == 2
+
+
+def test_deadline_skips_providers(monkeypatch):
+    from app.core import llm_reviewer as L
+    from app.core.diff_parser import parse_diff
+    monkeypatch.setenv("GROQ_API_KEY", "x"); monkeypatch.setattr(L, "REVIEW_DEADLINE_S", 0)
+    _, meta = L.review_pr(parse_diff(VULN), [], "Python Backend", list(L.WEEKS)[0])
+    assert meta.demo_fallback and "budget" in meta.fallback_errors[0]
+
+
+def test_cache_returns_same_review_instantly(client, monkeypatch):
+    body = {"diff": VULN, "track": "Python Backend", "week": "Weeks 5-6: Core architecture (auth, DB, APIs)"}
+    a = client.post("/api/review", json=body).json()
+    from app.core import pipeline
+    monkeypatch.setattr(pipeline, "review_pr", lambda *x, **k: (_ for _ in ()).throw(AssertionError("not cached")))
+    b = client.post("/api/review", json=body).json()
+    assert a["id"] == b["id"]
