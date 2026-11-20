@@ -1,0 +1,74 @@
+[
+  {
+    "id": "r01-requests-netrc-cve",
+    "url": "https://github.com/psf/requests/pull/6963",
+    "intern": "awoimbee",
+    "track": "Python Backend",
+    "week": "Weeks 5-6: Core architecture (auth, DB, APIs)",
+    "title": "fix CVE 2024 47081: manual url parsing leads to netloc credentials leak",
+    "commits": [
+      "fix CVE-2024-47081",
+      "rm workaround not needed since py38",
+      "Merge 'origin/main' into aw/fix-CVE-2024-47081"
+    ],
+    "expected_triage": "NEEDS_MENTOR",
+    "seeded": [],
+    "label_note": "Security-sensitive: credential-leak fix in URL parsing; needs a human to judge."
+  },
+  {
+    "id": "r02-requests-encode-files",
+    "url": "https://github.com/psf/requests/pull/7502",
+    "intern": "LoicPernod",
+    "track": "Python Backend",
+    "week": "Weeks 5-6: Core architecture (auth, DB, APIs)",
+    "title": "Fix `_encode_files` detection for `__getattr__`-based file wrappers",
+    "commits": [
+      "Fix `_encode_files` detection for `__getattr__`-based file wrappers"
+    ],
+    "expected_triage": "AUTO_APPROVE",
+    "seeded": [],
+    "label_note": "Small focused bug fix with a regression test."
+  },
+  {
+    "id": "r03-click-show-envvar",
+    "url": "https://github.com/pallets/click/pull/3884",
+    "intern": "kdeldycke",
+    "track": "Python Backend",
+    "week": "Weeks 5-6: Core architecture (auth, DB, APIs)",
+    "title": "Fix `show_envvar` output for a sequence or an empty `envvar`",
+    "commits": [
+      "Fix `show_envvar` output for a sequence or an empty `envvar`"
+    ],
+    "expected_triage": "AUTO_APPROVE",
+    "seeded": [],
+    "label_note": "Focused bug fix with tests."
+  },
+  {
+    "id": "r04-flask-context-order",
+    "url": "https://github.com/pallets/flask/pull/5797",
+    "intern": "davidism",
+    "track": "Python Backend",
+    "week": "Weeks 5-6: Core architecture (auth, DB, APIs)",
+    "title": "push preserved contexts in correct order",
+    "commits": [
+      "push preserved contexts in correct order"
+    ],
+    "expected_triage": "NEEDS_MENTOR",
+    "seeded": [],
+    "label_note": "Changes request-context push ordering (core semantics); design judgement needed."
+  },
+  {
+    "id": "r05-express-normalize-test",
+    "url": "https://github.com/expressjs/express/pull/6894",
+    "intern": "Ayoub-Mabrouk",
+    "track": "Full Stack SaaS",
+    "week": "Weeks 5-6: Core architecture (auth, DB, APIs)",
+    "title": "test: add test for normalizeType fallback when mime lookup fails",
+    "commits": [
+      "test: add test for normalizeType fallback when mime lookup fails\n\nAdd test to verify that utils.normalizeType correctly defaults to\n'application/octet-stream' when mime.lookup() returns null/undefined\nfor unknown file extensions. This covers the fallback behavior on\nline 64 of lib/utils.js and ensures proper handling of unrecognized\nMIME types."
+    ],
+    "expected_triage": "AUTO_APPROVE",
+    "seeded": [],
+    "label_note": "Test-only addition, tiny."
+  }
+]

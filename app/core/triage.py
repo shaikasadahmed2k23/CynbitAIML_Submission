@@ -49,7 +49,8 @@ def decide(llm: ReviewResult, findings: list[Finding], similarity_top: float = 0
     if warn:
         reasons.append(f"{warn} warning(s)")
     if not reasons:
-        reasons.append("clean; safe to auto-approve")
+        reasons.append("clean; safe to auto-approve" if triage == "AUTO_APPROVE"
+                       else "AI reviewer recommended a mentor look (no static findings)")
 
     after = REVIEW_MIN_AUTO if triage == "AUTO_APPROVE" else REVIEW_MIN_AFTER_AI
     return TriageDecision(triage, priority, reasons, REVIEW_MIN_NO_AI - after)

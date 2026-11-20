@@ -96,3 +96,13 @@ def test_samples_and_review_detail(client):
 def test_unknown_api_route_is_json_404(client):
     r = client.get("/api/does-not-exist")
     assert r.status_code == 404 and r.json()["detail"] == "Not found"
+
+
+def test_store_is_seeded_when_file_missing(tmp_path):
+    """Ephemeral hosts (Render) start without data/store.json: the 10 samples must be re-created on startup."""
+    from app.core.pipeline import Store, load_samples, preload_samples
+    s = Store(tmp_path / "missing" / "store.json")
+    assert s.items == []
+    preload_samples(s)
+    assert len(s.items) == len(load_samples()) == 10
+    assert all(x.meta.provider == "mock" for x in s.items)  # seeding never spends LLM quota
