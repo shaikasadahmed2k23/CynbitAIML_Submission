@@ -7,7 +7,7 @@ const STEPS: { icon: ReactNode; title: string; body: string; file: string }[] = 
   { icon: <GitBranch />, title: "1 · Ingest", body: "Fetch a public PR through the GitHub REST API (or take a pasted diff) with the intern's track and roadmap stage.", file: "github.py" },
   { icon: <FileSearch />, title: "2 · Parse", body: "Unified diff becomes files, hunks and exact line numbers, so every comment can be anchored to a real line.", file: "diff_parser.py" },
   { icon: <ScanLine />, title: "3 · Static checks", body: "Millisecond heuristics: leaked secrets, SQL injection, missing tests, N+1 queries, thread races, debug leftovers, commit hygiene.", file: "static_checks.py" },
-  { icon: <Sparkles />, title: "4 · LLM rubric review", body: "Groq Llama 3.3 70B (Gemini fallback, deterministic demo fallback) scores five rubric areas as strict, validated JSON. Comments on lines that don't exist are dropped.", file: "llm_reviewer.py" },
+  { icon: <Sparkles />, title: "4 · LLM rubric review", body: "Groq gpt-oss-120b (Gemini 2.5 flash fallback, deterministic demo fallback) scores five rubric areas as strict, validated JSON. Comments on lines that don't exist are dropped.", file: "llm_reviewer.py" },
   { icon: <Copy />, title: "5 · Copy detection", body: "TF-IDF over character n-grams of normalized code. Renaming variables or editing comments doesn't hide a copied PR.", file: "similarity.py" },
   { icon: <ListOrdered />, title: "6 · Triage", body: "Static, LLM and similarity signals merge into a priority score. The LLM can never wave through a critical finding.", file: "triage.py" },
 ];
